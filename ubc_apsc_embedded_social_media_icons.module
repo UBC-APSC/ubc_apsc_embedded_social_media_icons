@@ -1,0 +1,108 @@
+<?php
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\webform\Entity\Webform;
+use Drupal\webform\Entity\WebformSubmission;
+use Drupal\webform\WebformSubmissionForm;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\media\Entity\Media;
+
+/**
+ * Takes a url and returns the domain name
+ * REFERENCE: https://stackoverflow.com/questions/16027102/get-domain-name-from-full-url
+ */
+function get_domain_name($url) {
+  $parsed_url = parse_url($url);
+  $domain = isset($parsed_url['host']) ? $parsed_url['host'] : $parsed_url['path'];
+  if (preg_match('/(?P<domain>[a-z0-9][a-z0-9\-]{1,63}\.[a-z\.]{2,6})$/i', $domain, $regs)) {
+    $full_domain = $regs['domain'];
+    list($domain_name, $tld) = explode(".", $full_domain);
+    return $domain_name;
+  }
+  return '';
+}
+
+/**
+ * Takes in a handle and returns the link to that social media platform/handle
+ */
+function get_link_for_handle($handle, $social_media_type) {
+  // The handle passed in should always start with an @, this is just an extra guard
+  $clean_handle = str_starts_with($handle, '@') ? explode("@", $handle)[1] : null;
+  $link = empty($clean_handle) ? null : 'https://'.strtolower($social_media_type).'.com/'.$clean_handle;
+  return $link;
+}
+
+/**
+ * Implements hook_entity_presave().
+ * Takes the social media links / handles and formats them and also settings the link text for them
+ */
+function ubc_apsc_embedded_social_media_icons_node_presave($entity) {
+
+	switch ($entity->bundle()) {
+		case 'spotlight':
+
+			// Get node revision log, check not empty
+			$webform_sid = (empty($entity->get('revision_log')->getValue()[0]['value'])) ?: explode(':', $entity->get('revision_log')->getValue()[0]['value']);
+
+			// Only act on new content from rising stars with a submission form ID
+			if ($entity->isNew() && isset($webform_sid) && is_array($webform_sid) && isset($webform_sid[0]) && isset($webform_sid[2]) && $webform_sid[0] == 'rising_star' && is_numeric($webform_sid[2]) ) {
+				$social_platforms = ['facebook','linkedin','twitter','instagram'];
+				// Load rising star submission values using sid.
+				$webform_submission = \Drupal\webform\Entity\WebformSubmission::load($webform_sid[2]);
+        // For each entry:
+        // - check the validity of the input
+        // - add a link title in the form of 'Find me on [platform name]'
+				foreach($social_platforms as $site) {
+					$social_entry = $webform_submission->getElementData($site);
+          // If an entry is not a valid URL & site is Facebook or Linkedin: set it as null (i.e. to exclude this link)
+          // If an entry is not a valid URL & site is Twitter or Instagram: check if it starts with an @, if so convert to URL, if not then set it as null
+          if (!filter_var($social_entry, FILTER_VALIDATE_URL)) {
+            $social_entry = ($site == 'twitter' || $site == 'instagram') && str_starts_with($social_entry, '@')
+              ? get_link_for_handle($social_entry, $site)
+              : null;
+          }
+					if(!empty($social_entry)) {
+						$link_title = 'Find me on ' . ucfirst(get_domain_name($social_entry));
+						$links[] = [
+						  'uri' => $social_entry,
+						  'title' => $link_title,
+						  'options' => [
+                'attributes' => [
+                  'target' => '_blank',
+                ],
+						  ],
+						];
+					}
+				}
+        if (!empty($links)) $entity->set('field_social_links', $links);
+      }
+		break;
+		default:
+		break;
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node templates.
+ * Takes each of the social media links and sets the social media icons for them for the twig template to render
+ */
+function ubc_apsc_embedded_social_media_icons_preprocess_node(&$variables) {
+  $node = $variables['node'];
+  $node_type = $node->getType();
+
+  // Domain icons that are supported
+  $domains = ['twitter', 'facebook', 'vimeo', 'youtube', 'instagram', 'linkedin', 'tiktok'];
+
+  // Check if nodetype is spotlight and only act if the social links field is not empty
+  if ($node_type == 'spotlight' && !$node->field_social_links->isEmpty()) {
+    // For each entry:
+    // - check if the domain of the link is supported
+    // - if supported, set the icon name using the domain
+    // - if not supported, set the icon name as the default '#icon-globe'
+    foreach($node->field_social_links as $key => $item) {
+      $icon_name = in_array(get_domain_name($item->getUrl()->getUri()), $domains) ? '#icon-' . get_domain_name($item->getUrl()->getUri()) : '#icon-globe';
+      $variables['content']['field_social_links'][$key]['#icon-name'] = $icon_name;
+    }
+  };
+}

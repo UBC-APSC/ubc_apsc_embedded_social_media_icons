@@ -1,0 +1,15 @@
+{
+    "name": "apsc-web/ubc_apsc_embedded_social_media_icons",
+    "description": "Modifies link field entries in Spotlight & Rising Star webforms and turn them into an icon via Twig templates.",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "require": {},
+    "authors": [
+		{
+			"name": "apsc-web",
+			"email": "web@apsc.ubc.ca",
+			"homepage": "https://apsc.ubc.ca"
+		}
+	],
+    "minimum-stability": "stable"
+}
