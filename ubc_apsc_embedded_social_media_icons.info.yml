@@ -2,9 +2,14 @@ name: 'UBC APSC Embedded Social Media Icons'
 description: 'Takes social media links and generate social media icons that link to those pages.'
 package: 'UBC APSC'
 type: module
-core_version_requirement: ^9.4 || ^10
+core_version_requirement: ^9.4 || ^10 || ^11
 dependencies:
   - drupal:node
   - drupal:link
   - paragraphs:paragraphs
   - webform:webform (>=6.1.0)
+
+# Information added by Drupal.org packaging script on 2020-11-18
+version: '1.1'
+project: 'UBC APSC'
+datestamp: 1757346192
