@@ -10,6 +10,6 @@ dependencies:
   - webform:webform (>=6.1.0)
 
 # Information added by Drupal.org packaging script on 2020-11-18
-version: '1.1'
+version: '1.2'
 project: 'ubc_apsc_embedded_social_media_icons'
-datestamp: 1757346192
+datestamp: 1760658672
