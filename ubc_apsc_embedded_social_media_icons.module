@@ -108,6 +108,25 @@ function ubc_apsc_embedded_social_media_icons_preprocess_node(&$variables) {
 }
 
 /**
+ * Implements hook_preprocess_HOOK() for taxonomy term templates.
+ * Takes each of the social media links and sets the social media icons for them for the twig template to render
+ */
+function ubc_apsc_embedded_social_media_icons_preprocess_taxonomy_term(&$variables) {
+  $term = $variables['term'];
+  $bundle = $term->bundle();
+
+  $domains = ['twitter', 'facebook', 'vimeo', 'youtube', 'instagram', 'linkedin', 'tiktok'];
+  if ($bundle == 'program' && !$term->field_social_links->isEmpty()) {
+    foreach ($term->field_social_links as $key => $item) {
+      $uri = $item->uri;
+      $icon_name = in_array(get_domain_name($uri), $domains) ? '#icon-' . get_domain_name($uri) : '#icon-globe';
+      $variables['field_social_links'][$key]['#icon-name'] = $icon_name;
+      $variables['field_social_links'][$key]['#icon-url'] = $uri;
+    }
+  }
+}
+
+/**
  * Implements hook_update_projects_alter(&$projects).
  * Alter the list of projects before fetching data and comparing versions.
  *
