@@ -121,7 +121,6 @@ function ubc_apsc_embedded_social_media_icons_preprocess_taxonomy_term(&$variabl
       $uri = $item->uri;
       $icon_name = in_array(get_domain_name($uri), $domains) ? '#icon-' . get_domain_name($uri) : '#icon-globe';
       $variables['field_social_links'][$key]['#icon-name'] = $icon_name;
-      $variables['field_social_links'][$key]['#icon-url'] = $uri;
     }
   }
 }
