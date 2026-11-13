@@ -116,7 +116,9 @@ function ubc_apsc_embedded_social_media_icons_preprocess_taxonomy_term(&$variabl
   $bundle = $term->bundle();
 
   $domains = ['twitter', 'facebook', 'vimeo', 'youtube', 'instagram', 'linkedin', 'tiktok'];
-  if ($bundle == 'program' && !$term->field_social_links->isEmpty()) {
+  if ($bundle == 'program'
+    && $term->hasField('field_social_links')
+    && !$term->field_social_links->isEmpty()) {
     foreach ($term->field_social_links as $key => $item) {
       $uri = $item->uri;
       $icon_name = in_array(get_domain_name($uri), $domains) ? '#icon-' . get_domain_name($uri) : '#icon-globe';
