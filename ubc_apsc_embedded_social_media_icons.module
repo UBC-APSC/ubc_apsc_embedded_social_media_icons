@@ -94,8 +94,10 @@ function ubc_apsc_embedded_social_media_icons_preprocess_node(&$variables) {
   // Domain icons that are supported
   $domains = ['twitter', 'facebook', 'vimeo', 'youtube', 'instagram', 'linkedin', 'tiktok'];
 
-  // Check if nodetype is spotlight and only act if the social links field is not empty
-  if ($node_type == 'spotlight' && !$node->field_social_links->isEmpty()) {
+  // Check if nodetype is spotlight or profile and only act if the social links field is not empty
+  if (in_array($node_type, ['spotlight', 'ubc_profile'], TRUE) &&
+    $node->hasField('field_social_links') &&
+    !$node->get('field_social_links')->isEmpty()) {
     // For each entry:
     // - check if the domain of the link is supported
     // - if supported, set the icon name using the domain
